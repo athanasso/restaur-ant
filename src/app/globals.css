@@ -31,3 +31,9 @@ body {
     text-wrap: balance;
   }
 }
+
+@layer base {
+  body {
+    @apply text-gray-900 bg-white;
+  }
+}
