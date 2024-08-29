@@ -1,3 +1,4 @@
+import { Restaurant, Review } from '@/types';
 import axios from './axios';
 
 const API_URL = process.env.HOST || 'http://localhost:3000';
@@ -54,4 +55,63 @@ export const getUserReview = async (restaurantId: number, userId: number) => {
   } catch (error) {
     throw new Error('Failed to fetch user review');
   }
+};
+
+// Restaurant management
+export const createRestaurantAsAdmin = async (restaurantData: { name: string; phoneNumber: string; address: string }) => {
+  const response = await axios.post(`${API_URL}/restaurants`, restaurantData);
+  return response.data;
+};
+
+export const updateRestaurantAsAdmin = async (id: number, restaurantData: { name: string; phoneNumber: string; address: string;}) => {
+  const response = await axios.put(`${API_URL}/restaurants/${id}`, restaurantData);
+  return response.data;
+};
+
+export const deleteRestaurantAsAdmin = async (id: number) => {
+  const response = await axios.delete(`${API_URL}/restaurants/${id}`);
+  return response.data;
+};
+
+// User management
+export const getUsersAsAdmin = async () => {
+  const response = await axios.get(`${API_URL}/users`);
+  return response.data;
+};
+
+export const updateUserAsAdmin = async (id: number, userData: { username: string, role: string}) => {
+  const response = await axios.put(`${API_URL}/users/${id}`, userData);
+  return response.data;
+};
+
+export const deleteUserAsAdmin = async (id: number) => {
+  const response = await axios.delete(`${API_URL}/users/${id}`);
+  return response.data;
+};
+
+export const createUserAsAdmin = async (userData: { username: string, role: string }) => {
+  const response = await axios.post(`${API_URL}/users`, userData);
+  return response.data;
+};
+
+// Review management
+export const getReviewsAsAdmin = async () => {
+  const response = await axios.get(`${API_URL}/reviews`);
+  return response.data;
+};
+
+export const updateReviewAsAdmin = async (id: number, reviewData: Review) => {
+  console.log('reviewData', reviewData);
+  const response = await axios.put(`${API_URL}/reviews/${id}`, reviewData);
+  return response.data;
+};
+
+export const deleteReviewAsAdmin = async (id: number) => {
+  const response = await axios.delete(`${API_URL}/reviews/${id}`);
+  return response.data;
+};
+
+export const createReviewAsAdmin = async (reviewData: { rating: number, comment: string, userId: number }) => {
+  const response = await axios.post(`${API_URL}/reviews`, reviewData);
+  return response.data;
 };
