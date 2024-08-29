@@ -1,23 +1,51 @@
-import { useState } from 'react'
-import { createReview } from '@/lib/api'
+'use client';
+
+import { useState, useEffect } from 'react';
+import { createReview, updateReview } from '@/lib/api';
+import { Review } from '@/types';
 
 interface Props {
-  restaurantId: string
+  restaurantId: number;
+  onReviewAdded: (review: Review) => void;
+  initialReview?: Review;
 }
 
-export default function ReviewForm({ restaurantId }: Props) {
-  const [rating, setRating] = useState(5)
-  const [comment, setComment] = useState('')
+export default function ReviewForm({ restaurantId, onReviewAdded, initialReview }: Props) {
+  const [rating, setRating] = useState(initialReview?.rating || 5);
+  const [comment, setComment] = useState(initialReview?.comment || '');
+  const userId = parseInt(localStorage.getItem('userId') || '');
+
+  useEffect(() => {
+    if (initialReview) {
+      setRating(initialReview.rating);
+      setComment(initialReview.comment);
+    }
+  }, [initialReview]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    await createReview(restaurantId, { rating, comment })
-    // Reset form and refresh reviews
-  }
+    e.preventDefault();
+    try {
+      let review;
+      if (initialReview) {
+        review = await updateReview(restaurantId, initialReview.id, { rating, comment }, userId);
+      } else {
+        review = await createReview(restaurantId, { rating, comment, userId });
+      }
+      onReviewAdded(review);
+      if (!initialReview) {
+        setRating(5);
+        setComment('');
+      }
+    } catch (error) {
+      console.error('Error submitting review:', error);
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="mt-8">
-      <h3 className="text-xl font-semibold mb-4">Leave a Review</h3>
+      <h3 className="text-xl font-semibold mb-4">
+        {initialReview ? 'Edit Your Review' : 'Leave a Review'}
+      </h3>
       <div className="mb-4">
         <label htmlFor="rating" className="block mb-2">Rating:</label>
         <input
@@ -41,8 +69,8 @@ export default function ReviewForm({ restaurantId }: Props) {
         ></textarea>
       </div>
       <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-        Submit Review
+        {initialReview ? 'Update Review' : 'Submit Review'}
       </button>
     </form>
-  )
+  );
 }
