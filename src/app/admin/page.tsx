@@ -21,7 +21,7 @@ export default function AdminPanel() {
         router.push('/');
       }
     } else {
-      router.push('/login');
+      router.push('/');
     }
   }, [isAuthenticated, router]);
 
