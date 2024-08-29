@@ -1,21 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getRestaurants, createRestaurantAsAdmin, updateRestaurantAsAdmin, deleteRestaurantAsAdmin } from '@/lib/api';
 
 export default function RestaurantManager() {
   const [restaurants, setRestaurants] = useState<{ id: number, name: string, phoneNumber: string, address: string }[]>([]);
   const [newRestaurant, setNewRestaurant] = useState({ name: '', phoneNumber: '', address: '' });
   const [editingRestaurant, setEditingRestaurant] = useState<{ id: number, name: string, phoneNumber: string, address: string } | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(3);
+  const [totalPages, setTotalPages] = useState<number>(1);
+
+  const fetchRestaurants = useCallback(async () => {
+    try {
+      const response = await getRestaurants(currentPage, pageSize);
+      setRestaurants(response.items);
+      setTotalPages(response.pageCount);
+    } catch (error) {
+      console.error('Error fetching restaurants:', error);
+    }
+  }, [currentPage, pageSize]);
 
   useEffect(() => {
     fetchRestaurants();
-  }, []);
-
-  const fetchRestaurants = async () => {
-    const data = await getRestaurants();
-    setRestaurants(data);
-  };
+  }, [fetchRestaurants]);
 
   const handleCreateRestaurant = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,76 +50,125 @@ export default function RestaurantManager() {
     fetchRestaurants();
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setPageSize(Number(event.target.value));
+    setCurrentPage(1);
+  };
+
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-2">Manage Restaurants</h2>
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-4">Manage Restaurants</h2>
       
       {/* Create Restaurant Form */}
-      <form onSubmit={handleCreateRestaurant} className="mb-4">
-        <input
-          type="text"
-          value={newRestaurant.name}
-          onChange={(e) => setNewRestaurant({ ...newRestaurant, name: e.target.value })}
-          placeholder="Enter restaurant name"
-          className="mr-2 p-2 border text-gray-900"
-        />
-        <input
-          type="text"
-          value={newRestaurant.phoneNumber}
-          onChange={(e) => setNewRestaurant({ ...newRestaurant, phoneNumber: e.target.value })}
-          placeholder="Enter phone number"
-          className="mr-2 p-2 border text-gray-900"
-        />
-        <input
-          type="text"
-          value={newRestaurant.address}
-          onChange={(e) => setNewRestaurant({ ...newRestaurant, address: e.target.value })}
-          placeholder="Enter address"
-          className="mr-2 p-2 border text-gray-900"
-        />
-        <button type="submit" className="bg-green-500 text-white px-4 py-2">Add Restaurant</button>
+      <form onSubmit={handleCreateRestaurant} className="mb-6">
+        <div className="flex space-x-2 mb-4">
+          <input
+            type="text"
+            value={newRestaurant.name}
+            onChange={(e) => setNewRestaurant({ ...newRestaurant, name: e.target.value })}
+            placeholder="Enter restaurant name"
+            className="flex-1 p-2 border border-gray-300 rounded text-gray-900"
+          />
+          <input
+            type="text"
+            value={newRestaurant.phoneNumber}
+            onChange={(e) => setNewRestaurant({ ...newRestaurant, phoneNumber: e.target.value })}
+            placeholder="Enter phone number"
+            className="flex-1 p-2 border border-gray-300 rounded text-gray-900"
+          />
+          <input
+            type="text"
+            value={newRestaurant.address}
+            onChange={(e) => setNewRestaurant({ ...newRestaurant, address: e.target.value })}
+            placeholder="Enter address"
+            className="flex-1 p-2 border border-gray-300 rounded text-gray-900"
+          />
+          <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">Add Restaurant</button>
+        </div>
       </form>
 
       {/* Restaurant List */}
-      <ul>
+      <ul className="space-y-4">
         {restaurants.map((restaurant) => (
-          <li key={restaurant.id} className="mb-2">
+          <li key={restaurant.id} className="border border-gray-300 rounded-lg p-4 flex items-center justify-between">
             {editingRestaurant && editingRestaurant.id === restaurant.id ? (
-              <form onSubmit={handleUpdateRestaurant} className="flex flex-col">
+              <form onSubmit={handleUpdateRestaurant} className="flex flex-col space-y-2 w-full">
                 <input
                   type="text"
                   value={editingRestaurant.name}
                   onChange={(e) => setEditingRestaurant({ ...editingRestaurant, name: e.target.value })}
                   placeholder="Edit restaurant name"
-                  className="mb-2 p-2 border text-gray-900"
+                  className="p-2 border border-gray-300 rounded text-gray-900"
                 />
                 <input
                   type="text"
                   value={editingRestaurant.phoneNumber}
                   onChange={(e) => setEditingRestaurant({ ...editingRestaurant, phoneNumber: e.target.value })}
                   placeholder="Edit phone number"
-                  className="mb-2 p-2 border text-gray-900"
+                  className="p-2 border border-gray-300 rounded text-gray-900"
                 />
                 <input
                   type="text"
                   value={editingRestaurant.address}
                   onChange={(e) => setEditingRestaurant({ ...editingRestaurant, address: e.target.value })}
                   placeholder="Edit address"
-                  className="mb-2 p-2 border text-gray-900"
+                  className="p-2 border border-gray-300 rounded text-gray-900"
                 />
-                <button type="submit" className="bg-blue-500 text-white px-4 py-2 mr-2">Save</button>
-                <button onClick={() => setEditingRestaurant(null)} className="bg-gray-500 text-white px-4 py-2">Cancel</button>
+                <div className="flex space-x-2">
+                  <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Save</button>
+                  <button type="button" onClick={() => setEditingRestaurant(null)} className="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+                </div>
               </form>
             ) : (
-              <div className="flex items-center">
-                <span className="mr-2">{restaurant.name}</span>
-                <button onClick={() => setEditingRestaurant(restaurant)} className="bg-yellow-500 text-white px-4 py-2 mr-2">Edit</button>
-                <button onClick={() => handleDeleteRestaurant(restaurant.id)} className="bg-red-500 text-white px-4 py-2">Delete</button>
+              <div className="flex items-center justify-between w-full">
+                <div>
+                  <div className="text-lg font-semibold">{restaurant.name}</div>
+                  <div className="text-gray-600">{restaurant.phoneNumber}</div>
+                  <div className="text-gray-600">{restaurant.address}</div>
+                </div>
+                <div className="flex space-x-2">
+                  <button onClick={() => setEditingRestaurant(restaurant)} className="bg-yellow-500 text-white px-4 py-2 rounded">Edit</button>
+                  <button onClick={() => handleDeleteRestaurant(restaurant.id)} className="bg-red-500 text-white px-4 py-2 rounded">Delete</button>
+                </div>
               </div>
             )}
           </li>
         ))}
       </ul>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-6">
+        <div>
+          <label htmlFor="pageSize" className="mr-2">Restaurants per page:</label>
+          <select id="pageSize" value={pageSize} onChange={handlePageSizeChange} className="border border-gray-300 p-2 rounded text-gray-900">
+            <option value={3}>3</option>
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+          </select>
+        </div>
+        <div>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1}
+            className="mx-1 px-3 py-1 rounded bg-gray-300 text-gray-700 disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="mx-2">{`Page ${currentPage} of ${totalPages}`}</span>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= totalPages}
+            className="mx-1 px-3 py-1 rounded bg-gray-300 text-gray-700 disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

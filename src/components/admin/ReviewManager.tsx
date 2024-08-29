@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getReviewsAsAdmin, createReviewAsAdmin, updateReviewAsAdmin, deleteReviewAsAdmin, getUsersAsAdmin, getRestaurants } from '@/lib/api';
+import { getReviewsAsAdmin, createReviewAsAdmin, updateReviewAsAdmin, deleteReviewAsAdmin, _getRestaurants, _getUsers } from '@/lib/api';
 import { Review } from '@/types';
 
 export default function ReviewManager() {
@@ -9,27 +9,49 @@ export default function ReviewManager() {
   const [users, setUsers] = useState<{ id: number, username: string }[]>([]);
   const [restaurants, setRestaurants] = useState<{ id: number, name: string }[]>([]);
   const [newReview, setNewReview] = useState({ rating: 0, comment: '', userId: 0, restaurantId: 0 });
-  const [editingReview, setEditingReview] = useState<{ id: number | null, rating: number, comment: string, userId: number, restaurantId: number } | null>({ id: null, rating: 0, comment: '', userId: 0, restaurantId: 0 });
+  const [editingReview, setEditingReview] = useState<{ id: number | null, rating: number, comment: string, userId: number, restaurantId: number } | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(3);
+  const [totalPages, setTotalPages] = useState<number>(1);
 
   useEffect(() => {
+    const fetchReviews = async () => {
+      const data = await getReviewsAsAdmin(currentPage, pageSize);
+      setReviews(data.items);
+      setTotalPages(Math.ceil(data.totalCount / pageSize));
+    };
+
     fetchReviews();
     fetchUsers();
     fetchRestaurants();
-  }, []);
+  }, [currentPage, pageSize]);
 
   const fetchReviews = async () => {
-    const data = await getReviewsAsAdmin();
-    setReviews(data);
+    try {
+      const response = await getReviewsAsAdmin(currentPage, pageSize);
+      setReviews(response.items);
+      setTotalPages(response.pageCount);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
   };
 
   const fetchUsers = async () => {
-    const data = await getUsersAsAdmin();
-    setUsers(data);
+    try {
+      const data = await _getUsers();
+      setUsers(data.items);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
   };
 
   const fetchRestaurants = async () => {
-    const data = await getRestaurants();
-    setRestaurants(data);
+    try {
+      const data = await _getRestaurants();
+      setRestaurants(data.items);
+    } catch (error) {
+      console.error('Error fetching restaurants:', error);
+    }
   };
 
   const handleCreateReview = async (e: React.FormEvent) => {
@@ -53,6 +75,15 @@ export default function ReviewManager() {
   const handleDeleteReview = async (id: number) => {
     await deleteReviewAsAdmin(id);
     fetchReviews();
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setPageSize(Number(event.target.value));
+    setCurrentPage(1);
   };
 
   return (
@@ -99,12 +130,12 @@ export default function ReviewManager() {
         <button type="submit" className="bg-green-500 text-white px-4 py-2">Add Review</button>
       </form>
 
-      {/* Review List */}
-      <ul>
+       {/* Review List */}
+       <ul className="space-y-4">
         {reviews.map((review) => (
-          <li key={review.id} className="mb-2">
+          <li key={review.id} className="border border-gray-300 rounded-lg p-4 flex items-center justify-between">
             {editingReview && editingReview.id === review.id ? (
-              <form onSubmit={handleUpdateReview} className="flex">
+              <form onSubmit={handleUpdateReview} className="flex flex-col space-y-2 w-full">
                 <input
                   type="number"
                   min="1"
@@ -112,18 +143,18 @@ export default function ReviewManager() {
                   value={editingReview.rating}
                   onChange={(e) => setEditingReview({ ...editingReview, rating: parseInt(e.target.value) })}
                   placeholder="Edit rating (1-5)"
-                  className="mr-2 p-2 border w-16 text-gray-900"
+                  className="w-16 p-2 border border-gray-300 rounded text-gray-900"
                 />
                 <input
                   value={editingReview.comment}
                   onChange={(e) => setEditingReview({ ...editingReview, comment: e.target.value })}
                   placeholder="Edit comment"
-                  className="mr-2 p-2 border flex-grow text-gray-900"
+                  className="flex-grow p-2 border border-gray-300 rounded text-gray-900"
                 />
                 <select
                   value={editingReview.userId}
                   onChange={(e) => setEditingReview({ ...editingReview, userId: parseInt(e.target.value) })}
-                  className="mr-2 p-2 border text-gray-900"
+                  className="p-2 border border-gray-300 rounded text-gray-900"
                 >
                   <option value="0">Select User</option>
                   {users.map(user => (
@@ -133,26 +164,60 @@ export default function ReviewManager() {
                 <select
                   value={editingReview.restaurantId}
                   onChange={(e) => setEditingReview({ ...editingReview, restaurantId: parseInt(e.target.value) })}
-                  className="mr-2 p-2 border text-gray-900"
+                  className="p-2 border border-gray-300 rounded text-gray-900"
                 >
                   <option value="0">Select Restaurant</option>
                   {restaurants.map(restaurant => (
                     <option key={restaurant.id} value={restaurant.id}>{restaurant.name}</option>
                   ))}
                 </select>
-                <button type="submit" className="bg-blue-500 text-white px-4 py-2 mr-2">Save</button>
-                <button onClick={() => setEditingReview(null)} className="bg-gray-500 text-white px-4 py-2">Cancel</button>
+                <div className="flex space-x-2">
+                  <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">Save</button>
+                  <button type="button" onClick={() => setEditingReview(null)} className="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
+                </div>
               </form>
             ) : (
-              <div className="flex items-center">
-                <span className="mr-2">Rating: {review.rating}, Comment: {review.comment}, User: {String(users.find(user => user.id === review.user.id)?.username)}, Restaurant: {String(restaurants.find(restaurant => restaurant.id === review.restaurant.id)?.name)}</span>
-                <button onClick={() => setEditingReview(review)} className="bg-yellow-500 text-white px-4 py-2 mr-2">Edit</button>
-                <button onClick={() => handleDeleteReview(review.id)} className="bg-red-500 text-white px-4 py-2">Delete</button>
+              <div className="flex items-center justify-between w-full">
+                <span className="flex-grow">Rating: {review.rating}, Comment: {review.comment}, User: {String(users.find(user => user.id === review.user.id)?.username)}, Restaurant: {String(restaurants.find(restaurant => restaurant.id === review.restaurant.id)?.name)}</span>
+                <div className="flex space-x-2">
+                  <button onClick={() => setEditingReview(review)} className="bg-yellow-500 text-white px-4 py-2 rounded">Edit</button>
+                  <button onClick={() => handleDeleteReview(review.id)} className="bg-red-500 text-white px-4 py-2 rounded">Delete</button>
+                </div>
               </div>
             )}
           </li>
         ))}
       </ul>
+
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-6">
+        <div>
+          <label htmlFor="pageSize" className="mr-2">Reviews per page:</label>
+          <select id="pageSize" value={pageSize} onChange={handlePageSizeChange} className="border border-gray-300 p-2 rounded text-gray-900">
+            <option value={3}>3</option>
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+          </select>
+        </div>
+        <div>
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage <= 1}
+            className="mx-1 px-3 py-1 rounded bg-gray-300 text-gray-700 disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage >= totalPages}
+            className="mx-1 px-3 py-1 rounded bg-gray-300 text-gray-700 disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

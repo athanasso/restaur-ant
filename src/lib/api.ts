@@ -3,14 +3,21 @@ import axios from './axios';
 
 const API_URL = process.env.HOST || 'http://localhost:3000';
 
-export const getRestaurants = async () => {
+export const getRestaurants = async (page: number, take: number) => {
   try {
-    const response = await axios.get(`${API_URL}/restaurants`);
+    const response = await axios.get(`${API_URL}/restaurants`, {
+      params: { page, take },
+    });
     return response.data;
   } catch (error) {
     console.error('Failed to fetch restaurants', error);
     throw new Error('Failed to fetch restaurants');
   }
+};
+
+export const _getRestaurants = async () => {
+  const response = await axios.get(`${API_URL}/restaurants`);
+  return response.data;
 };
 
 export const getRestaurantDetails = async (id: string) => {
@@ -74,7 +81,14 @@ export const deleteRestaurantAsAdmin = async (id: number) => {
 };
 
 // User management
-export const getUsersAsAdmin = async () => {
+export const getUsersAsAdmin = async (page: number, take: number) => {
+  const response = await axios.get(`${API_URL}/users`, {
+    params: { page, take },
+  });
+  return response.data;
+};
+
+export const _getUsers = async () => {
   const response = await axios.get(`${API_URL}/users`);
   return response.data;
 };
@@ -95,8 +109,10 @@ export const createUserAsAdmin = async (userData: { username: string, role: stri
 };
 
 // Review management
-export const getReviewsAsAdmin = async () => {
-  const response = await axios.get(`${API_URL}/reviews`);
+export const getReviewsAsAdmin = async (page: number, take: number) => {
+  const response = await axios.get(`${API_URL}/reviews`, {
+    params: { page, take },
+  });
   return response.data;
 };
 
