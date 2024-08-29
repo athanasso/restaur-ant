@@ -3,12 +3,21 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from './AuthProvider';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function HeaderLinks() {
   const pathname = usePathname();
   const { isAuthenticated, logout } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+
+  useEffect(() => {
+    const adminStatus = localStorage.getItem('role') === 'admin';
+    if (adminStatus) {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
+    }
+  }, [isAuthenticated, setIsAdmin]);
 
   if (isAuthenticated) {
     return (
