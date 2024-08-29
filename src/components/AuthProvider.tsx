@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (token: string, role: string) => void;
+  login: (token: string, role: string, id: string) => void;
   logout: () => void;
 }
 
@@ -23,15 +23,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = (token: string, role: string) => {
+  const login = (token: string, role: string, id: string) => {
     localStorage.setItem('access_token', token);
     localStorage.setItem('role', role);
+    localStorage.setItem('userId', id);
     setIsAuthenticated(true);
   };
 
   const logout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('role');
+    localStorage.removeItem('userId');
     setIsAuthenticated(false);
     router.push('/login');
   };

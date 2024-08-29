@@ -25,9 +25,7 @@ export default function LoginForm() {
         password,
       });
 
-      const { access_token } = response.data;
-
-      login(response.data.access_token, response.data.payload.sub);
+      login(response.data.access_token, response.data.payload.role, response.data.payload.sub);
 
       router.push('/');
     } catch (error) {
