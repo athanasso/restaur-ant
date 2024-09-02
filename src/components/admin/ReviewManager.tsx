@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getReviewsAsAdmin, createReviewAsAdmin, updateReviewAsAdmin, deleteReviewAsAdmin, _getRestaurants, _getUsers } from '@/lib/api';
 import { Review } from '@/types';
+import Pagination from '../Pagination';
 
 export default function ReviewManager() {
   const [reviews, setReviews] = useState<{restaurant: any; user: any; id: number, rating: number, comment: string, userId: number, restaurantId: number}[]>([]);
@@ -190,34 +191,13 @@ export default function ReviewManager() {
       </ul>
 
       {/* Pagination Controls */}
-      <div className="flex justify-between items-center mt-6">
-        <div>
-          <label htmlFor="pageSize" className="mr-2">Reviews per page:</label>
-          <select id="pageSize" value={pageSize} onChange={handlePageSizeChange} className="border border-gray-300 p-2 rounded text-gray-900">
-            <option value={3}>3</option>
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-          </select>
-        </div>
-        <div>
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage <= 1}
-            className="mx-1 px-3 py-1 rounded bg-gray-300 text-gray-700 disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <span>Page {currentPage} of {totalPages}</span>
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage >= totalPages}
-            className="mx-1 px-3 py-1 rounded bg-gray-300 text-gray-700 disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
     </div>
   );
 }

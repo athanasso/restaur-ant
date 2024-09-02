@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getRestaurants, createRestaurantAsAdmin, updateRestaurantAsAdmin, deleteRestaurantAsAdmin } from '@/lib/api';
+import Pagination from '../Pagination';
 
 export default function RestaurantManager() {
   const [restaurants, setRestaurants] = useState<{ id: number, name: string, phoneNumber: string, address: string }[]>([]);
@@ -141,34 +142,13 @@ export default function RestaurantManager() {
       </ul>
 
       {/* Pagination Controls */}
-      <div className="flex justify-between items-center mt-6">
-        <div>
-          <label htmlFor="pageSize" className="mr-2">Restaurants per page:</label>
-          <select id="pageSize" value={pageSize} onChange={handlePageSizeChange} className="border border-gray-300 p-2 rounded text-gray-900">
-            <option value={3}>3</option>
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-          </select>
-        </div>
-        <div>
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage <= 1}
-            className="mx-1 px-3 py-1 rounded bg-gray-300 text-gray-700 disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <span className="mx-2">{`Page ${currentPage} of ${totalPages}`}</span>
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage >= totalPages}
-            className="mx-1 px-3 py-1 rounded bg-gray-300 text-gray-700 disabled:opacity-50"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
     </div>
   );
 }
