@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
+import { useAuth } from './AuthProvider';
 
 export default function RegisterForm() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,12 +20,14 @@ export default function RegisterForm() {
     const url = process.env.HOST || 'http://localhost:3000';
 
     try {
-      await axios.post( url + '/auth/signup', {
+      const response = await axios.post( url + '/auth/signup', {
         username,
         password,
       });
 
-      router.push('/login');
+      login(response.data.access_token, response.data.payload.role, response.data.payload.sub);
+
+      router.push('/');
     } catch (error) {
       setError('Registration failed. Please try again.');
       console.error('Registration error:', error);
