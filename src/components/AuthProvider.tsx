@@ -2,10 +2,12 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn, signOut } from 'next-auth/react';
+import { register } from 'module';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (token: string, role: string, id: string) => void;
+  login: (username: string, password: string) => void;
   logout: () => void;
 }
 
@@ -14,28 +16,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
-  const [userId, setUserId] = useState<number | null>(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  const login = (token: string, role: string, id: string) => {
-    localStorage.setItem('access_token', token);
-    localStorage.setItem('role', role);
-    localStorage.setItem('userId', id);
-    setIsAuthenticated(true);
+  const login = (username: string, password: string) => {
+    signIn('credentials', { username, password, redirect: false })
+      .then(() => {
+        router.push('/');
+        setIsAuthenticated(true);
+      })
+      .catch((err) => console.error('Login failed', err));
   };
 
   const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('userId');
-    setIsAuthenticated(false);
-    router.push('/login');
+    signOut({ redirect: false }).then(() => {
+      router.push('/login');
+      setIsAuthenticated(false);
+    });
   };
 
   return (

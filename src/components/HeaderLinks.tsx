@@ -1,28 +1,17 @@
-'use client';
-
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from './AuthProvider';
-import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 
 export default function HeaderLinks() {
   const pathname = usePathname();
   const { isAuthenticated, logout } = useAuth();
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-
-  useEffect(() => {
-    const adminStatus = localStorage.getItem('role') === 'admin';
-    if (adminStatus) {
-      setIsAdmin(true);
-    } else {
-      setIsAdmin(false);
-    }
-  }, [isAuthenticated, setIsAdmin]);
+  const { data } = useSession();
 
   if (isAuthenticated) {
     return (
       <div className="flex items-center">
-        {isAdmin && (
+        {data?.user.role === 'admin' && (
           <Link href="/admin" className="mr-4 text-white">
             Admin Panel
           </Link>

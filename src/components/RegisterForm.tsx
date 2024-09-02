@@ -25,9 +25,8 @@ export default function RegisterForm() {
         password,
       });
 
-      login(response.data.access_token, response.data.payload.role, response.data.payload.sub);
+      login(username, password);
 
-      router.push('/');
     } catch (error) {
       setError('Registration failed. Please try again.');
       console.error('Registration error:', error);

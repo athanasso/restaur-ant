@@ -1,31 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useAuth } from '@/components/AuthProvider';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import RestaurantManager from '@/components/admin/RestaurantManager';
 import UserManager from '@/components/admin/UserManager';
 import ReviewManager from '@/components/admin/ReviewManager';
+import { useSession } from 'next-auth/react';
 
 export default function AdminPanel() {
-  const { isAuthenticated } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const router = useRouter();
+  const { data } = useSession();
   const [activeTab, setActiveTab] = useState('restaurants');
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      const role = localStorage.getItem('role');
-      setIsAdmin(role === 'admin');
-      if (role !== 'admin') {
-        router.push('/');
-      }
-    } else {
-      router.push('/');
-    }
-  }, [isAuthenticated, router]);
-
-  if (!isAdmin) {
+  if (data?.user.role !== 'admin') {
     return <div>Loading...</div>;
   }
 

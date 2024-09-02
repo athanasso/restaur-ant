@@ -17,17 +17,8 @@ export default function LoginForm() {
     e.preventDefault();
     setError('');
 
-    const url = process.env.HOST || 'http://localhost:3000';
-
     try {
-      const response = await axios.post( url + '/auth/login', {
-        username,
-        password,
-      });
-
-      login(response.data.access_token, response.data.payload.role, response.data.payload.sub);
-
-      router.push('/');
+      login(username, password);
     } catch (error) {
       setError('Invalid username or password');
       console.error('Login error:', error);
