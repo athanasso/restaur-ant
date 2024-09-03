@@ -14,13 +14,13 @@ export default function LoginForm() {
   const { login } = useAuth();
 
   const validateForm = () => {
-    if (username.length < 6) {
-      setError('Username must be at least 6 characters long.');
+    if (username.length < 5) {
+      setError('Username must be at least 5 characters long.');
       return false;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+    if (password.length < 5) {
+      setError('Password must be at least 5 characters long.');
       return false;
     }
     return true;
