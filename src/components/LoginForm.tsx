@@ -13,9 +13,26 @@ export default function LoginForm() {
   const router = useRouter();
   const { login } = useAuth();
 
+  const validateForm = () => {
+    if (username.length < 6) {
+      setError('Username must be at least 6 characters long.');
+      return false;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!validateForm()) {
+      return;
+    }
 
     try {
       login(username, password);

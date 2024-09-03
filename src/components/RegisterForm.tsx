@@ -14,14 +14,39 @@ export default function RegisterForm() {
   const router = useRouter();
   const { login } = useAuth();
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateForm = () => {
+    if (username.length < 6) {
+      setError('Username must be at least 6 characters long.');
+      return false;
+    }
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address.');
+      return false;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
+    if (!validateForm()) {
+      return;
+    }
+
     const url = process.env.HOST || 'http://localhost:3000';
 
     try {
-      const response = await axios.post( url + '/auth/signup', {
+      const response = await axios.post(url + '/auth/signup', {
         username,
         email,
         password,
@@ -42,7 +67,7 @@ export default function RegisterForm() {
         <div>
           <label htmlFor="username" className="block mb-1">Username</label>
           <input
-            type="username"
+            type="text"
             id="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
