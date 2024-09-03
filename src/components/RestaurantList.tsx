@@ -62,7 +62,9 @@ export default function RestaurantList() {
               <div>
                 <h3 className="text-xl font-medium">{restaurant.name}</h3>
                 <p>Average Rating: {restaurant.averageRating}</p>
-                <p className="text-blue-500 mt-2">Login to view details and leave a review</p>
+                <Link href="/login">
+                  <p className="text-blue-500 mt-2 cursor-pointer">Login to view details and leave a review</p>
+                </Link>
               </div>
             )}
           </li>
