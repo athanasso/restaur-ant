@@ -1,4 +1,4 @@
-import { Restaurant, Review } from '@/types';
+import { Review } from '@/types';
 import axios from './axios';
 
 const API_URL = process.env.HOST || 'http://localhost:3000';
@@ -130,4 +130,28 @@ export const deleteReviewAsAdmin = async (id: number) => {
 export const createReviewAsAdmin = async (reviewData: { rating: number, comment: string, userId: number }) => {
   const response = await axios.post(`${API_URL}/reviews`, reviewData);
   return response.data;
+};
+
+// ... Self ...
+
+export const getUser = async (id: number) => {
+  try {
+    const response = await axios.get(`${API_URL}/users/me`,{
+      params: { id },
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('Failed to fetch user details');
+  }
+};
+
+export const updateUser = async (id: number, userData: { username: string; email: string, password: string }) => {
+  try {
+    const response = await axios.put(`${API_URL}/users/me/`, userData, {
+      params: { id }
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('Failed to update user details');
+  }
 };

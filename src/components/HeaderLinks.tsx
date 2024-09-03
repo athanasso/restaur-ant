@@ -11,6 +11,9 @@ export default function HeaderLinks() {
   if (isAuthenticated) {
     return (
       <div className="flex items-center">
+        <Link href="/profile" className="mr-4 text-white">
+          Profile
+        </Link>
         {data?.user.role === 'admin' && (
           <Link href="/admin" className="mr-4 text-white">
             Admin Panel
