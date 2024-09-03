@@ -11,13 +11,16 @@ export default function RestaurantManager() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(3);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [error, setError] = useState<string>('');
 
   const fetchRestaurants = useCallback(async () => {
+    setError('');
     try {
       const response = await getRestaurants(currentPage, pageSize);
       setRestaurants(response.items);
       setTotalPages(response.pageCount);
     } catch (error) {
+      setError('Failed to fetch restajrants. Please try again later.');
       console.error('Error fetching restaurants:', error);
     }
   }, [currentPage, pageSize]);
@@ -28,27 +31,41 @@ export default function RestaurantManager() {
 
   const handleCreateRestaurant = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    await createRestaurantAsAdmin(newRestaurant);
-    setNewRestaurant({ name: '', phoneNumber: '', address: '' });
-    fetchRestaurants();
+    setError('');
+    try {
+      await createRestaurantAsAdmin(newRestaurant);
+      setNewRestaurant({ name: '', phoneNumber: '', address: '' });
+      fetchRestaurants();
+    } catch (error) {
+      setError('Failed to create restaurant. Please check your input and try again.');
+      console.error('Error creating restaurant:', error);
+    }
   };
 
   const handleUpdateRestaurant = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setError('');
     if (editingRestaurant) {
-      await updateRestaurantAsAdmin(editingRestaurant.id, {
-        ...editingRestaurant
-      });
-      setEditingRestaurant(null);
-      fetchRestaurants();
+      try {
+        await updateRestaurantAsAdmin(editingRestaurant.id, { ...editingRestaurant });
+        setEditingRestaurant(null);
+        fetchRestaurants();
+      } catch (error) {
+        setError('Failed to update restaurant. Please check your input and try again.');
+        console.error('Error updating restaurant:', error);
+      }
     }
   };
 
   const handleDeleteRestaurant = async (id: number) => {
-    await deleteRestaurantAsAdmin(id);
-    fetchRestaurants();
+    setError('');
+    try {
+      await deleteRestaurantAsAdmin(id);
+      fetchRestaurants();
+    } catch (error) {
+      setError('Failed to delete restaurant. Please try again.');
+      console.error('Error deleting restaurant:', error);
+    }
   };
 
   const handlePageChange = (page: number) => {
@@ -63,6 +80,8 @@ export default function RestaurantManager() {
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Manage Restaurants</h2>
+
+      {error && <p className="text-red-500 mb-4">{error}</p>}
       
       {/* Create Restaurant Form */}
       <form onSubmit={handleCreateRestaurant} className="mb-6">

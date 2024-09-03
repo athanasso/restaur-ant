@@ -14,12 +14,19 @@ export default function ReviewManager() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(3);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     const fetchReviews = async () => {
-      const data = await getReviewsAsAdmin(currentPage, pageSize);
-      setReviews(data.items);
-      setTotalPages(Math.ceil(data.totalCount / pageSize));
+      setError('');
+      try {
+        const response = await getReviewsAsAdmin(currentPage, pageSize);
+        setReviews(response.items);
+        setTotalPages(response.pageCount);
+      } catch (error) {
+        setError('Failed to fetch reviews. Please try again later.');
+        console.error('Error fetching reviews:', error);
+      }
     };
 
     fetchReviews();
@@ -28,54 +35,78 @@ export default function ReviewManager() {
   }, [currentPage, pageSize]);
 
   const fetchReviews = async () => {
+    setError('');
     try {
       const response = await getReviewsAsAdmin(currentPage, pageSize);
       setReviews(response.items);
       setTotalPages(response.pageCount);
     } catch (error) {
+      setError('Failed to fetch reviews. Please try again later.');
       console.error('Error fetching reviews:', error);
     }
   };
 
   const fetchUsers = async () => {
+    setError('');
     try {
       const data = await _getUsers();
       setUsers(data.items);
     } catch (error) {
+      setError('Failed to fetch users. Please try again later.');
       console.error('Error fetching users:', error);
     }
   };
 
   const fetchRestaurants = async () => {
+    setError('');
     try {
       const data = await _getRestaurants();
       setRestaurants(data.items);
     } catch (error) {
+      setError('Failed to fetch restaurants. Please try again later.');
       console.error('Error fetching restaurants:', error);
     }
   };
 
   const handleCreateReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createReviewAsAdmin(newReview);
-    setNewReview({ rating: 0, comment: '', userId: 0, restaurantId: 0 });
-    fetchReviews();
+    setError('');
+    try {
+      await createReviewAsAdmin(newReview);
+      setNewReview({ rating: 0, comment: '', userId: 0, restaurantId: 0 });
+      fetchReviews();
+    } catch (error) {
+      setError('Failed to create review. Please check your input and try again.');
+      console.error('Error creating review:', error);
+    }
   };
 
   const handleUpdateReview = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     if (editingReview && editingReview.id !== null) {
-      await updateReviewAsAdmin(editingReview.id, {
+      try {
+        await updateReviewAsAdmin(editingReview.id, {
           ...editingReview,
-      } as unknown as Review);
-      setEditingReview(null);
-      fetchReviews();
+        } as unknown as Review);
+        setEditingReview(null);
+        fetchReviews();
+      } catch (error) {
+        setError('Failed to update review. Please check your input and try again.');
+        console.error('Error updating review:', error);
+      }
     }
   };
 
   const handleDeleteReview = async (id: number) => {
-    await deleteReviewAsAdmin(id);
-    fetchReviews();
+    setError('');
+    try {
+      await deleteReviewAsAdmin(id);
+      fetchReviews();
+    } catch (error) {
+      setError('Failed to delete review. Please try again.');
+      console.error('Error deleting review:', error);
+    }
   };
 
   const handlePageChange = (page: number) => {
@@ -90,6 +121,8 @@ export default function ReviewManager() {
   return (
     <div>
       <h2 className="text-xl font-bold mb-2">Manage Reviews</h2>
+
+      {error && <p className="text-red-500 mb-4">{error}</p>}
 
       {/* Create Review Form */}
       <form onSubmit={handleCreateReview} className="mb-4">

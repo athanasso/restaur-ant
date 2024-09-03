@@ -11,13 +11,16 @@ export default function UserManager() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(3);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [error, setError] = useState<string>('');
 
   const fetchUsers = useCallback(async () => {
+    setError('');
     try {
       const response = await getUsersAsAdmin(currentPage, pageSize);
       setUsers(response.items);
       setTotalPages(response.pageCount);
     } catch (error) {
+      setError('Failed to fetch users. Please try again later.');
       console.error('Error fetching users:', error);
     }
   }, [currentPage, pageSize]);
@@ -28,29 +31,47 @@ export default function UserManager() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createUserAsAdmin(newUser);
-    setNewUser({ username: '', email: '', password: '', role: 'user' });
-    fetchUsers();
+    setError('');
+    try {
+      await createUserAsAdmin(newUser);
+      setNewUser({ username: '', email: '', password: '', role: 'user' });
+      fetchUsers();
+    } catch (error) {
+      setError('Failed to create user. Please check your input.');
+      console.error('Create user error:', error);
+    }
   };
 
   const handleUpdateUser = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     if (editingUser) {
       if (editingUser.id !== null) {
-        await updateUserAsAdmin(editingUser.id, {
-          username: editingUser.username,
-          email: editingUser.email,
-          role: editingUser.role,
-        });
+        try {
+          await updateUserAsAdmin(editingUser.id, {
+            username: editingUser.username,
+            email: editingUser.email,
+            role: editingUser.role,
+          });
+          setEditingUser(null);
+          fetchUsers();
+        } catch (error) {
+          setError('Failed to update user. Please check your input.');
+          console.error('Update user error:', error);
+        }
       }
-      setEditingUser(null);
-      fetchUsers();
     }
   };
 
   const handleDeleteUser = async (id: number) => {
-    await deleteUserAsAdmin(id);
-    fetchUsers();
+    setError('');
+    try {
+      await deleteUserAsAdmin(id);
+      fetchUsers();
+    } catch (error) {
+      setError('Failed to delete user. Please try again.');
+      console.error('Delete user error:', error);
+    }
   };
 
   const handlePageChange = (page: number) => {
@@ -65,6 +86,8 @@ export default function UserManager() {
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Manage Users</h2>
+
+      {error && <p className="text-red-500 mb-4">{error}</p>}
 
       {/* Create User Form */}
       <form onSubmit={handleCreateUser} className="mb-6">
