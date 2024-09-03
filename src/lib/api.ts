@@ -93,7 +93,7 @@ export const _getUsers = async () => {
   return response.data;
 };
 
-export const updateUserAsAdmin = async (id: number, userData: { username: string, role: string}) => {
+export const updateUserAsAdmin = async (id: number, userData: { username: string, email: string, role: string}) => {
   const response = await axios.put(`${API_URL}/users/${id}`, userData);
   return response.data;
 };

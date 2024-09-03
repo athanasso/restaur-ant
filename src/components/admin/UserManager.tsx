@@ -5,9 +5,9 @@ import { getUsersAsAdmin, createUserAsAdmin, updateUserAsAdmin, deleteUserAsAdmi
 import Pagination from '../Pagination';
 
 export default function UserManager() {
-  const [users, setUsers] = useState<{ id: number, username: string, role: string }[]>([]);
-  const [newUser, setNewUser] = useState({ username: '', password: '', role: 'user' });
-  const [editingUser, setEditingUser] = useState<{ id: number | null, username: string, role: string } | null>(null);
+  const [users, setUsers] = useState<{ id: number, email: string, username: string,  role: string }[]>([]);
+  const [newUser, setNewUser] = useState({ username: '', email: '', password: '', role: 'user' });
+  const [editingUser, setEditingUser] = useState<{ id: number | null, email: string, username: string, role: string } | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(3);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -29,7 +29,7 @@ export default function UserManager() {
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     await createUserAsAdmin(newUser);
-    setNewUser({ username: '', password: '', role: 'user' });
+    setNewUser({ username: '', email: '', password: '', role: 'user' });
     fetchUsers();
   };
 
@@ -39,6 +39,7 @@ export default function UserManager() {
       if (editingUser.id !== null) {
         await updateUserAsAdmin(editingUser.id, {
           username: editingUser.username,
+          email: editingUser.email,
           role: editingUser.role,
         });
       }
@@ -64,7 +65,7 @@ export default function UserManager() {
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-4">Manage Users</h2>
-      
+
       {/* Create User Form */}
       <form onSubmit={handleCreateUser} className="mb-6">
         <div className="flex space-x-2 mb-4">
@@ -80,6 +81,13 @@ export default function UserManager() {
             value={newUser.password}
             onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
             placeholder="Enter password"
+            className="flex-1 p-2 border border-gray-300 rounded text-gray-900"
+          />
+          <input
+            type="email"
+            value={newUser.email}
+            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+            placeholder="Enter email"
             className="flex-1 p-2 border border-gray-300 rounded text-gray-900"
           />
           <select
@@ -105,6 +113,13 @@ export default function UserManager() {
                   value={editingUser.username}
                   onChange={(e) => setEditingUser({ ...editingUser, username: e.target.value })}
                   placeholder="Edit username"
+                  className="p-2 border border-gray-300 rounded text-gray-900"
+                />
+                <input
+                  type="text"
+                  value={editingUser.email}
+                  onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                  placeholder="Edit email"
                   className="p-2 border border-gray-300 rounded text-gray-900"
                 />
                 <select

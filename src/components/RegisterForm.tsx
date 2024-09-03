@@ -8,6 +8,7 @@ import { useAuth } from './AuthProvider';
 
 export default function RegisterForm() {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function RegisterForm() {
     try {
       const response = await axios.post( url + '/auth/signup', {
         username,
+        email,
         password,
       });
 
@@ -44,6 +46,17 @@ export default function RegisterForm() {
             id="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            required
+            className="w-full px-3 py-2 border rounded text-gray-900"
+          />
+        </div>
+        <div>
+          <label htmlFor="email" className="block mb-1">Email</label>
+          <input
+            type="email"
+            id="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
             className="w-full px-3 py-2 border rounded text-gray-900"
           />
