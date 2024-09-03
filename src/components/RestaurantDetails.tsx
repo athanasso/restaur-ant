@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Restaurant, Review } from '@/types';
 import ClientReviewForm from './ClientReviewForm';
 import { deleteReview, updateReview } from '@/lib/api';
+import { useSession } from 'next-auth/react';
 
 interface Props {
   restaurant: Restaurant;
@@ -12,7 +13,8 @@ interface Props {
 export default function RestaurantDetails({ restaurant }: Props) {
   const [reviews, setReviews] = useState<Review[]>(restaurant.reviews);
   const [userReview, setUserReview] = useState<Review | undefined>(undefined);
-  const userId = parseInt(localStorage.getItem('userId') || '');
+  const data = useSession();
+  const userId = Number(data?.data?.user?.id) || 0;
 
   useEffect(() => {
     if (userId) {
