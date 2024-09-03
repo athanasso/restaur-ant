@@ -32,7 +32,10 @@ export default function LoginForm() {
     }
 
     try {
-      login(username, password);
+      const result: any = await login(username, password);
+      if (!result.ok) {
+        setError('Invalid username or password');
+      }
     } catch (error) {
       setError('Invalid username or password');
       console.error('Login error:', error);

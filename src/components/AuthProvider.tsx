@@ -3,7 +3,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn, signOut } from 'next-auth/react';
-import { register } from 'module';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -17,15 +16,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
 
-  const login = (username: string, password: string) => {
-    signIn('credentials', { username, password, redirect: false })
-      .then((result) => {
-        if (result?.ok){
-          router.push('/');
-          setIsAuthenticated(true);
-        }
-      })
-      .catch((err) => console.error('Login failed', err));
+  const login = async (username: string, password: string) => {
+    try {
+      const result = await signIn('credentials', { username, password, redirect: false });
+      if (result?.ok) {
+        setIsAuthenticated(true);
+        router.push('/');
+      }
+      return result;
+    } catch (err) {
+      console.error('Login failed', err);
+      throw err;
+    }
   };
 
   const logout = () => {
