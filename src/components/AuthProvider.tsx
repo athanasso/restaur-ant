@@ -19,9 +19,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = (username: string, password: string) => {
     signIn('credentials', { username, password, redirect: false })
-      .then(() => {
-        router.push('/');
-        setIsAuthenticated(true);
+      .then((result) => {
+        if (result?.ok){
+          router.push('/');
+          setIsAuthenticated(true);
+        }
       })
       .catch((err) => console.error('Login failed', err));
   };
