@@ -20,7 +20,7 @@ export default function RestaurantManager() {
       setRestaurants(response.items);
       setTotalPages(response.pageCount);
     } catch (error) {
-      setError('Failed to fetch restajrants. Please try again later.');
+      setError('Failed to fetch restaurants. Please try again later.');
       console.error('Error fetching restaurants:', error);
     }
   }, [currentPage, pageSize]);
