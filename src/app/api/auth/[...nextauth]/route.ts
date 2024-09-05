@@ -1,7 +1,6 @@
 import axios from "axios";
 import NextAuth from "next-auth"
 import CredentialsProvider from 'next-auth/providers/credentials';
-import router from "next/router";
 
 const handler = NextAuth({
     providers: [
@@ -22,7 +21,7 @@ const handler = NextAuth({
                   },
                 });
     
-              if (res.status !== 201) {
+              if (res.status !== 200) {
                 throw new Error(res.data.message || 'Invalid credentials');
               }
     
